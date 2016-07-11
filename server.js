@@ -1,30 +1,36 @@
 var restify = require('restify'),
-              soap = require('soap');
+    soap = require('soap');
 
 var server = restify.createServer();
 
 server.use(restify.bodyParser())
 
+function slimPeople(people) {
+    var peeps = [];
+    people.forEach(function (p) {
+        peeps.push({ "id": p.id, "first": p.ItemPersonData.First, "last": p.ItemPersonData.Last, "city": p.ItemPersonAddressData1.City, "state": p.ItemPersonAddressData1.State, "zip": p.ItemPersonAddressData1.ZipCode })
+    }, this);
+
+    return peeps;
+}
 
 function getPeople(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
 
-    //res.send({ "shayne":"boyer"});
+    var url = 'http://peopleservice.azurewebsites.net/people.svc?wsdl';
 
+    var args = { value: 100 };
 
-  
-  var url = 'http://peopleservice.azurewebsites.net/people.svc?wsdl';
+    soap.createClient(url, function (err, client) {
+        client.GetCompletePeople(args, function (err, result) {
+            //console.log(result);
+            res.send(result.GetCompletePeopleResult.PersonMajor);
+            //var peeps = slimPeople(result.GetCompletePeopleResult.PersonMajor);
+            //res.send(peeps);
+        });
+    });
 
-  var args = {value: 10};
-
-  soap.createClient(url, function(err, client) {
-      client.GetCompletePeople(args, function(err, result) {
-          console.log(result);
-          res.send(result.GetCompletePeopleResult.PersonMajor);
-      });
-  });
-    
     next();
 }
 
