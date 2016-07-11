@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "restify": "^4.1.1",
+    "soap": "^0.16.0"
+  }
+}
